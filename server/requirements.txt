@@ -9,3 +9,5 @@ pydantic_core==2.33.2
 python-multipart==0.0.20
 uvicorn==0.37.0
 yfinance==0.2.66
+httpx==0.28.1
+requests==2.32.3
