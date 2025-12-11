@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LRS Backtest | Leveraged Rotation Strategy</title>
+    <meta name="description"
+        content="Premium backtesting tool for Leveraged Rotation Strategy with customizable parameters">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header" id="main-header">
+            <div class="logo">
+                <div class="logo-icon">📈</div>
+                <div class="logo-text">
+                    <h1>LRS Backtest</h1>
+                    <span class="tagline">Leveraged Rotation Strategy</span>
+                </div>
+            </div>
+            <button class="theme-toggle" id="theme-toggle" title="Toggle light/dark mode">
+                <span class="theme-icon-dark">🌙</span>
+                <span class="theme-icon-light">☀️</span>
+            </button>
+        </header>
+
+        <!-- Hide header when embedded -->
+        <script>
+            (function () {
+                const params = new URLSearchParams(window.location.search);
+                if (params.get('embed') === 'true') {
+                    document.getElementById('main-header').style.display = 'none';
+                    document.body.classList.add('embed-mode');
+                }
+            })();
+        </script>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Parameters Panel -->
+            <aside class="parameters-panel glass-card">
+                <h2 class="panel-title">
+                    <span class="icon">⚙️</span>
+                    Parameters
+                </h2>
+
+                <form id="backtest-form" class="form">
+                    <!-- Date Range -->
+                    <div class="form-group">
+                        <label for="start-date">Start Date</label>
+                        <input type="date" id="start-date" value="1970-01-01" min="1927-01-01" max="2025-12-31">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="end-date">End Date</label>
+                        <input type="date" id="end-date" value="2025-12-07" min="1927-01-01" max="2025-12-31">
+                    </div>
+
+                    <!-- MA Period -->
+                    <div class="form-group">
+                        <label for="ma-period">
+                            MA Period
+                            <span class="value-display" id="ma-value">200</span>
+                        </label>
+                        <input type="range" id="ma-period" min="20" max="400" value="200" step="10">
+                        <div class="range-labels">
+                            <span>20</span>
+                            <span>200</span>
+                            <span>400</span>
+                        </div>
+                    </div>
+
+                    <!-- Leverage -->
+                    <div class="form-group">
+                        <label for="leverage">
+                            Leverage
+                            <span class="value-display" id="leverage-value">3.0x</span>
+                        </label>
+                        <input type="range" id="leverage" min="1" max="5" value="3" step="0.5">
+                        <div class="range-labels">
+                            <span>1x</span>
+                            <span>3x</span>
+                            <span>5x</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary" id="run-btn">
+                        <span class="btn-text">Run Backtest</span>
+                        <span class="btn-loader" hidden></span>
+                    </button>
+                </form>
+
+                <!-- Strategy Info -->
+                <div class="strategy-info">
+                    <h3>Strategy Logic</h3>
+                    <p>Switch between <strong>3x Leveraged Stock</strong> and <strong>Gold</strong> based on moving
+                        average crossover.</p>
+                    <ul>
+                        <li>📈 <strong>Stock</strong>: Price &gt; MA</li>
+                        <li>🥇 <strong>Gold</strong>: Price &lt; MA</li>
+                    </ul>
+                </div>
+            </aside>
+
+            <!-- Results Area -->
+            <section class="results-area">
+                <!-- Metrics Cards -->
+                <div class="metrics-grid" id="metrics-grid">
+                    <div class="metric-card glass-card highlight">
+                        <div class="metric-label">Final NAV</div>
+                        <div class="metric-value" id="metric-nav">--</div>
+                    </div>
+                    <div class="metric-card glass-card">
+                        <div class="metric-label">CAGR</div>
+                        <div class="metric-value positive" id="metric-cagr">--</div>
+                    </div>
+                    <div class="metric-card glass-card">
+                        <div class="metric-label">Sharpe Ratio</div>
+                        <div class="metric-value" id="metric-sharpe">--</div>
+                    </div>
+                    <div class="metric-card glass-card">
+                        <div class="metric-label">Max Drawdown</div>
+                        <div class="metric-value negative" id="metric-mdd">--</div>
+                    </div>
+                    <div class="metric-card glass-card">
+                        <div class="metric-label">Volatility</div>
+                        <div class="metric-value" id="metric-vol">--</div>
+                    </div>
+                    <div class="metric-card glass-card">
+                        <div class="metric-label">Sortino</div>
+                        <div class="metric-value" id="metric-sortino">--</div>
+                    </div>
+                    <div class="metric-card glass-card">
+                        <div class="metric-label">Win Rate</div>
+                        <div class="metric-value" id="metric-winrate">--</div>
+                    </div>
+                    <div class="metric-card glass-card">
+                        <div class="metric-label">Calmar</div>
+                        <div class="metric-value" id="metric-calmar">--</div>
+                    </div>
+                    <div class="metric-card glass-card">
+                        <div class="metric-label">Recovery Time</div>
+                        <div class="metric-value" id="metric-recovery">--</div>
+                    </div>
+                </div>
+
+                <!-- Chart -->
+                <div class="chart-container glass-card">
+                    <div class="chart-header">
+                        <h2>NAV Performance</h2>
+                        <div class="chart-controls">
+                            <span class="zoom-hint">🔍 Scroll to zoom • Drag to pan</span>
+                            <button class="btn-reset-zoom" id="reset-zoom-btn" hidden>
+                                Reset Zoom
+                            </button>
+                        </div>
+                    </div>
+                    <div class="chart-legend">
+                        <span class="legend-item strategy"><span class="dot"></span>Strategy</span>
+                        <span class="legend-item sp500"><span class="dot"></span>S&P 500</span>
+                        <span class="legend-item stock1x"><span class="dot"></span>Stock (1x)</span>
+                        <span class="legend-item stock"><span class="dot"></span>Stock (3x)</span>
+                        <span class="legend-item gold"><span class="dot"></span>Gold</span>
+                        <span class="legend-item ma"><span class="dot"></span>MA Signal</span>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="nav-chart"></canvas>
+                    </div>
+                    <div class="chart-placeholder" id="chart-placeholder">
+                        <div class="placeholder-content">
+                            <span class="placeholder-icon">📊</span>
+                            <p>Configure parameters and run backtest to see results</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Risk Analysis Chart (Drawdown / Rolling Sharpe) -->
+                <div class="chart-container glass-card" id="risk-chart-container" hidden>
+                    <div class="chart-header">
+                        <h2>Risk Analysis</h2>
+                        <div class="chart-controls">
+                            <div class="toggle-container">
+                                <button class="toggle-btn active" id="toggle-drawdown">Drawdown</button>
+                                <button class="toggle-btn" id="toggle-sharpe">Rolling Sharpe</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-wrapper risk-chart-wrapper">
+                        <canvas id="risk-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Annual Returns -->
+                <div class="annual-returns glass-card" id="annual-returns" hidden>
+                    <div class="annual-header">
+                        <h2>Annual Returns</h2>
+                        <div class="toggle-container">
+                            <button class="toggle-btn active" id="toggle-absolute">Absolute</button>
+                            <button class="toggle-btn" id="toggle-relative">vs S&P 500</button>
+                        </div>
+                    </div>
+                    <div class="returns-grid" id="returns-grid"></div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" id="loading-overlay" hidden>
+            <div class="loader">
+                <div class="loader-spinner"></div>
+                <p>Running backtest...</p>
+                <span class="loader-subtitle">Downloading data & calculating metrics</span>
+            </div>
+        </div>
+
+        <!-- Error Toast -->
+        <div class="toast error-toast" id="error-toast" hidden>
+            <span class="toast-icon">⚠️</span>
+            <span class="toast-message" id="error-message"></span>
+            <button class="toast-close" onclick="hideError()">×</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

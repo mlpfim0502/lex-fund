@@ -1,0 +1,24 @@
+"""
+Prompts package
+"""
+from .legal_analysis import (
+    LITIGATION_RISK_PROMPT,
+    REGULATORY_CHANGE_PROMPT,
+    SEC_8K_ANALYSIS_PROMPT,
+    CASE_OUTCOME_PREDICTION_PROMPT,
+    LEGAL_RESEARCH_CHAT_PROMPT,
+    RESPONSE_CRITIC_PROMPT,
+    get_prompt,
+    format_prompt
+)
+
+__all__ = [
+    "LITIGATION_RISK_PROMPT",
+    "REGULATORY_CHANGE_PROMPT",
+    "SEC_8K_ANALYSIS_PROMPT",
+    "CASE_OUTCOME_PREDICTION_PROMPT",
+    "LEGAL_RESEARCH_CHAT_PROMPT",
+    "RESPONSE_CRITIC_PROMPT",
+    "get_prompt",
+    "format_prompt"
+]

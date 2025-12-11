@@ -1,0 +1,11 @@
+aiofiles==25.1.0
+fastapi==0.118.0
+networkx==3.5
+numpy==2.2.6
+pandas==2.2.3
+pydantic==2.11.9
+pydantic-settings==2.12.0
+pydantic_core==2.33.2
+python-multipart==0.0.20
+uvicorn==0.37.0
+yfinance==0.2.66
