@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import API_URL from '../config';
 
 function DocumentViewer() {
     const { '*': docPath } = useParams();
@@ -16,7 +17,7 @@ function DocumentViewer() {
         setError(null);
 
         try {
-            const response = await fetch(`/api/docs/${docPath}`);
+            const response = await fetch(`${API_URL}/api/docs/${docPath}`);
             if (!response.ok) {
                 throw new Error(`Document not found: ${docPath}`);
             }

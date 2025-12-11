@@ -1,22 +1,23 @@
 import { useState, useEffect } from 'react';
+import API_URL from '../config';
 
 // Checklist API functions
 const checklistApi = {
     async getChecklist(category = null) {
         const params = category ? `?category=${category}` : '';
-        const response = await fetch(`/api/checklist${params}`);
+        const response = await fetch(`${API_URL}/api/checklist${params}`);
         if (!response.ok) throw new Error('Failed to fetch checklist');
         return response.json();
     },
 
     async getSummary() {
-        const response = await fetch('/api/checklist/summary');
+        const response = await fetch(`${API_URL}/api/checklist/summary`);
         if (!response.ok) throw new Error('Failed to fetch summary');
         return response.json();
     },
 
     async updateItem(itemId, update) {
-        const response = await fetch(`/api/checklist/${itemId}`, {
+        const response = await fetch(`${API_URL}/api/checklist/${itemId}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(update)
@@ -26,7 +27,7 @@ const checklistApi = {
     },
 
     async completeItem(itemId) {
-        const response = await fetch(`/api/checklist/${itemId}/complete`, {
+        const response = await fetch(`${API_URL}/api/checklist/${itemId}/complete`, {
             method: 'POST'
         });
         if (!response.ok) throw new Error('Failed to complete item');
