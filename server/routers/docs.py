@@ -3,11 +3,14 @@ Document serving router for template files.
 """
 from fastapi import APIRouter, HTTPException
 from pathlib import Path
+import os
 
 router = APIRouter(prefix="/api/docs", tags=["documents"])
 
 # Base path for documents
-DOCS_DIR = Path(__file__).parent.parent.parent / "docs"
+# For Docker deployment: docs is copied into server/ directory alongside routers/
+# For local dev: fallback to parent's docs folder
+DOCS_DIR = Path(os.environ.get("DOCS_PATH", Path(__file__).parent.parent / "docs"))
 
 
 @router.get("/{path:path}")
